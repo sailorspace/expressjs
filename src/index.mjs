@@ -1,5 +1,5 @@
 
-import express from 'express';
+import express, { response } from 'express';
 import 'dotenv';
 
 const app = express();
@@ -17,8 +17,43 @@ const mockUsers = [
     { id: 6, name: 'jackie', city: "veinna" },
     { id: 7, name: 'ellei', city: "denmark" }
 ];
+
+//sample middleware 
+//we can enable it globally for all routes 
+//or at the specific routes
+const loggingmiddleware = (req, res, next) => {
+    console.log(`${req} - ${res.url}`);
+    next();
+};
+
+//the this middleware use in the PUT request , removes lot of code and makes the function need
+//helps in moving the extra bunesslogic part of code outside 
+const resolveIndexById = (req, res, next) => {
+    const { body, params: { id } } = req;
+    const parsedId = parseInt(req.params.id);
+    if (isNaN(parsedId))
+        return res.sendStatus(400);
+    //find the user by id/index
+    const findUserIndex = mockUsers.findIndex((user) => user.id === parsedId);
+    if (findUserIndex === -1) {
+        return res.sendStatus(404);
+    };
+
+    req.findUserIndex = findUserIndex; //attaching a property to the request object
+    //now we will inject these middlewares into request calls 
+    next();//finally calling next 
+    //next(error) next function also excepts parameters like error
+};
+
+//app.use(loggingmiddleware); //registered globally 
+
 //define route and pass a request handler/callback function 
-app.get("/", (req, res) => {
+app.get("/", (req, res, next) => {
+    console.log("Base URL");//this will get stucked in pending state as we will need to call the next 
+    //middleware 
+    next();//now this will allow to call the next function in the chain, without it the request will hang 
+    //in waiting or end here itself
+}, (req, res) => {
     //res.send("hello world");
     res.status(200).send({ msg: 'hello' });
 });
@@ -67,18 +102,18 @@ app.post("/api/users", (req, res) => {
 
 //update a row and all the columns i.e entire record
 //even if we do not provide a property still the update will include modifying it by its default value
-app.put("/api/users/:id", (req, res) => {
+app.put("/api/users/:id", resolveIndexById, (req, res) => {
     console.log("Put Called");
     console.log(req.body);
-    const { body, params: { id } } = req;
+    const { body, findUserIndex } = req;
     const parsedId = parseInt(req.params.id);
     if (isNaN(parsedId))
         return res.sendStatus(400);
-    //find the user by id/index
-    const findUserIndex = mockUsers.findIndex((user) => user.id === parsedId);
-    if (findUserIndex === -1) {
-        return res.sendStatus(404);
-    }
+    //find the user by id/index ..this code no longer needed as it has been moved to middleware
+    /*  const findUserIndex = mockUsers.findIndex((user) => user.id === parsedId);
+     if (findUserIndex === -1) {
+         return res.sendStatus(404);
+     } */
     //using spreader operetator which would internally update each value one by one
     mockUsers[findUserIndex] = { id: parsedId, ...body }; //entire merge , whole record update
     return res.sendStatus(200);
@@ -103,7 +138,19 @@ app.patch("/api/users/:id", (req, res) => {
 });
 
 //update a row and all the columns i.e entire record
-app.delete("/api/users", (req, res) => {
+app.delete("/api/users/:id", (req, res) => {
+    console.log("Delete Called");
+    const { params: { id } } = req;
+    const parsedId = parseInt(id);
+    if (isNaN(parsedId))
+        return res.sendStatus(400);
+    //find the user by id/index
+    const findUserIndex = mockUsers.findIndex((user) => user.id === parsedId);
+    if (findUserIndex === -1) {
+        return res.sendStatus(404);
+    }
+    mockUsers.splice(findUserIndex, 1);//
+    return response.status(200).send(true);
 
 });
 
