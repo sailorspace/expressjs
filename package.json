@@ -1,0 +1,29 @@
+{
+  "name": "apimanager",
+  "version": "1.0.0",
+  "description": "this will be a microservice orchestrator",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "orchestrator",
+    "apimanager",
+    "api",
+    "router",
+    "command",
+    "manager",
+    "api",
+    "handler",
+    "one",
+    "point",
+    "to",
+    "inner",
+    "circle"
+  ],
+  "author": "sanjay mahara",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.19.2"
+  }
+}
