@@ -2,9 +2,10 @@
   "name": "apimanager",
   "version": "1.0.0",
   "description": "this will be a microservice orchestrator",
-  "main": "index.js",
+  "main": "index.mjs",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start:dev": "nodemon ./src/index.mjs",
+    "start": "node ./src/index.mjs"
   },
   "keywords": [
     "orchestrator",
@@ -24,6 +25,11 @@
   "author": "sanjay mahara",
   "license": "ISC",
   "dependencies": {
+    "dotenv": "^16.4.5",
     "express": "^4.19.2"
+  },
+  "type": "module",
+  "devDependencies": {
+    "nodemon": "^3.1.4"
   }
 }
