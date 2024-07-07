@@ -14,8 +14,8 @@ const router = Router();
 //import 
 //app.use(<router>);
 //define route and pass a request handler/callback function 
-router.get("/", (req, res, next) => {
-    console.log("Base URL");//this will get stucked in pending state as we will need to call the next 
+router.get("/home", (req, res, next) => {
+    console.log("Home Page");//this will get stucked in pending state as we will need to call the next 
     //middleware 
     next();//now this will allow to call the next function in the chain, without it the request will hang 
     //in waiting or end here itself
@@ -37,6 +37,15 @@ router.get("/api/users", query("filter").isString()
     .withMessage("the filter must between 3-12 letters"),
     (req, res) => {
         console.log(req["express-validator#contexts"]);
+        console.log(req.sessionID);
+        req.sessionStore.get(req.session.id, (error, sessionData) => {
+            if (error) {
+                console.log(err);
+                throw error;
+            }
+            console.log(sessionData);
+        }
+        );
         const result = validationResult(req); //handle the validation result to do it for you
         //instead of doing manually
         console.log(result);
