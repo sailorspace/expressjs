@@ -2,8 +2,9 @@
 import { Router } from "express";
 import { query, validationResult, body, matchedData, checkSchema } from "express-validator";
 import { uservalidationscheme } from '../utils/uservalidationscheme.js';
-import { mockUsers  } from '../utils/constants.mjs';
-import { resolveIndexById  } from '../utils/middleware.js';
+import { mockUsers } from '../utils/constants.mjs';
+import { resolveIndexById } from '../utils/middleware.js';
+import crypto from "crypto";
 //like a mini application that can group together all the request
 //and then register the router to express
 const router = Router();
@@ -20,6 +21,12 @@ router.get("/", (req, res, next) => {
     //in waiting or end here itself
 }, (req, res) => {
     //res.send("hello world");
+    const userInfo = { "username": "sanjaymahara", "password": "sanjay12345" };
+    const hash = crypto.createHash('sha256');
+    hash.update(userInfo.toString());//feed the data to the hashfunction
+    const digest = hash.digest('hex'); //no make the hash ,generate the hash of the data
+    console.log(digest);
+    res.cookie("userinfo", digest, { maxAge: 6000 });
     res.status(200).send({ msg: 'hello' });
 });
 
