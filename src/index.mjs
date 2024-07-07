@@ -4,6 +4,9 @@ import routes from "./routes/routes.mjs";
 import cookieParser from 'cookie-parser';
 import session from 'express-session';
 import { mockUsers } from './utils/constants.mjs';
+import passport from "passport";
+import "./strategies/local-strategy.mjs";
+
 /* import userRouter from "../routes/user.mjs";
 import productsRouter from "../routes/products.mjs"; */
 
@@ -24,6 +27,11 @@ app.use(session({
         maxAge: 60000 * 60 //1hour 
     },
 }));
+
+app.use(passport.initialize()); //enable passport 
+app.use(passport.session()); //this takes care of tracking a user to the session and 
+//figure and validate user 
+
 //app.use(cookieParser("secret")); // in case we have a signed cookie 
 app.use(routes);
 
@@ -67,6 +75,7 @@ app.post("/api/auth", (req, res) => {
     return res.status(200).send(findUser);
 });
 
+
 app.get("/api/auth/status", (req, res) => {
     console.log(req.session.user);
     req.sessionStore.get(req.sessionID, (error, session) => {
@@ -80,7 +89,21 @@ app.get("/api/auth/status", (req, res) => {
         : res.status(401).send({ msg: "Not Authenticated" })
 });
 
+//authentication using passport 
+//create an auth api endpoint and pass strategy for authentication 
+app.post("/api/authenticate", passport.authenticate('local'), (req, res) => {
+    res.status(200).send(true);
+});
+//passport auth status check 
+app.get("/api/authenticatestatus", (req, res) => {
+    console.log(`Inside passpor auth status`);
+    console.log(req.user);
+    console.log(req.session);
+    return (req.user) ? res.send(req.user) : res.sendStatus(401);
+});
+
 app.post("/api/updateuser", (req, res) => {
+    const { body: item } = req; //do something with this to update the user when the session is validated
     return req.session.user ? res.send({ msf: "user updated" })
         : res.status(401).send({ msg: "Not Authenticated" });
     //for user update we can check if the sent user to update is the same as the 
