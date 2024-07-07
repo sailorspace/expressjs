@@ -1,13 +1,17 @@
 
 import express, { response } from 'express';
 import routes from "./routes/routes.mjs";
+import cookieParser from 'cookie-parser';
 /* import userRouter from "../routes/user.mjs";
 import productsRouter from "../routes/products.mjs"; */
 
 //{ query } for validating the query parameters
 //here we can 
 const app = express();
+app.use(cookieParser());
+//app.use(cookieParser("secret")); in case we have a signed cookie 
 app.use(routes);
+
 /* 
 app.use(userRouter);
 app.use(productsRouter); */

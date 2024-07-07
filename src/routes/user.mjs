@@ -27,6 +27,7 @@ router.get("/", (req, res, next) => {
     const digest = hash.digest('hex'); //no make the hash ,generate the hash of the data
     console.log(digest);
     res.cookie("userinfo", digest, { maxAge: 6000 });
+    //cookie expires will mean the browser will not send the cookie
     res.status(200).send({ msg: 'hello' });
 });
 
