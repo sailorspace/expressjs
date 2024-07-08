@@ -2,6 +2,7 @@ import passport from "passport";
 import { Strategy } from "passport-local";
 import { mockUsers } from "../utils/constants.mjs";
 import { User } from   "../mongoose/schema/user.mjs";
+import { comparePassword } from "../utils/bcrypt.mjs";
 //taking the user object validated and storing that in the session 
 //does well with expressjs
 //serialize the data into the session 
@@ -56,7 +57,8 @@ export default passport.use(
                 //const findUser = mockUsers.find((user) => user.name === username);
                 const findUser = await User.findOne({name:username});
                 if (!findUser) throw new Error('User not found');
-                if (findUser.password !== password) throw Error("Invalid Credentials");
+                //if (findUser.password !== hashedPassword) throw Error("Invalid Credentials");
+                if (!comparePassword(password,findUser.password)) throw Error("Invalid Credentials");
                 done(null, findUser);
             }
             catch (error) {
@@ -68,7 +70,5 @@ export default passport.use(
 //everytime a user sends a post request for authentication
 // passport will look for the username and password inside that request body
 //and pass that in inside the callback function "done"
-
-
 
 

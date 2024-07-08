@@ -5,6 +5,7 @@ import { uservalidationscheme } from '../utils/uservalidationscheme.js';
 import { mockUsers } from '../utils/constants.mjs';
 import { resolveIndexById } from '../utils/middleware.js';
 import crypto from "crypto";
+import { hashPassword } from "../utils/bcrypt.mjs";
 import { User } from "../mongoose/schema/user.mjs";
 //like a mini application that can group together all the request
 //and then register the router to express
@@ -86,9 +87,10 @@ router.post("/api/users",
         const result = validationResult(req);
         if (!result.isEmpty()) return res.status(400).send({ errors: result.array() });
         const data = matchedData(req);
+        data.password = hashPassword(data.password);
         console.log(`new user to be added`);
         console.log(data);
-        //const { body } = req;
+        //const { body } = req; 
         //const newUser = new User(body); //better get the data from the marchedData funtion
         //using the request data directly could be an hazard and dangerous 
         //better to validate the data first from middleware ..validationResult
