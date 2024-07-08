@@ -6,7 +6,8 @@ import session from 'express-session';
 import { mockUsers } from './utils/constants.mjs';
 import passport from "passport";
 import mongoose from "mongoose";
-import "./strategies/local-strategy.mjs";
+//import "./strategies/local-strategy.mjs";
+import "./strategies/discord-strategy.mjs";
 import { User } from './mongoose/schema/user.mjs';
 import MongoStore from 'connect-mongo';
 import cors from "cors";
@@ -42,7 +43,7 @@ app.use(session({
 app.use(passport.initialize()); //enable passport 
 app.use(passport.session()); //this takes care of tracking a user to the session and 
 //figure and validate user 
-app.use(cors({credentials: true, origin: 'http://localhost:3000'}));
+app.use(cors({ credentials: true, origin: 'http://localhost:3000' }));
 
 //app.use(cookieParser("secret")); // in case we have a signed cookie 
 app.use(routes);
@@ -111,7 +112,7 @@ app.post("/api/authenticate", passport.authenticate('local'), (req, res) => {
 //passport auth status check 
 
 app.get("/api/auth/status", (request, response) => {
-	return request.user ? response.send(request.user) : response.sendStatus(401);
+    return request.user ? response.send(request.user) : response.sendStatus(401);
 });
 
 app.post("/api/updateuser", (req, res) => {
@@ -121,3 +122,14 @@ app.post("/api/updateuser", (req, res) => {
     //for user update we can check if the sent user to update is the same as the 
     //one in the session store by matching the id or some hash value
 });
+
+app.get("/api/auth/discord", passport.authenticate("discord"));
+app.get(
+	"/api/auth/discord/redirect",
+	passport.authenticate("discord"),
+	(request, response) => {
+        console.log(request.session);
+        console.log(request.user);
+		response.sendStatus(200);
+	}
+);
