@@ -35,6 +35,16 @@ passport.deserializeUser(async(id, done) => {
     } 
 });
 
+/* passport.deserializeUser(async (id, done) => {
+	try {
+		const findUser = await User.findById(id);
+		if (!findUser) throw new Error("User Not Found");
+		done(null, findUser);
+	} catch (err) {
+		done(err, null);
+	}
+}); */
+
 //all the passport modules have a strategy class 
 //e.g passport-http-bearer , passport-facebook, passport-google-oauth , passport-twitter ,
 //passport-auth0 , passport-oauth2 , openid-client , passport-microsoft etc.
@@ -59,6 +69,7 @@ export default passport.use(
                 if (!findUser) throw new Error('User not found');
                 //if (findUser.password !== hashedPassword) throw Error("Invalid Credentials");
                 if (!comparePassword(password,findUser.password)) throw Error("Invalid Credentials");
+                console.log(`user set to ${findUser}`);
                 done(null, findUser);
             }
             catch (error) {

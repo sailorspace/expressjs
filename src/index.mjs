@@ -8,6 +8,7 @@ import passport from "passport";
 import mongoose from "mongoose";
 import "./strategies/local-strategy.mjs";
 import { User } from './mongoose/schema/user.mjs';
+import MongoStore from 'connect-mongo';
 /* import userRouter from "../routes/user.mjs";
 import productsRouter from "../routes/products.mjs"; */
 
@@ -32,6 +33,9 @@ app.use(session({
     cookie: {
         maxAge: 60000 * 60 //1hour 
     },
+    store: MongoStore.create({
+        client: mongoose.connection.getClient()
+    })
 }));
 
 app.use(passport.initialize()); //enable passport 
@@ -73,7 +77,7 @@ app.get("/", (req, res) => {
 app.post("/api/auth", (req, res) => {
     const { username, password } = req.body;
     //const findUser = mockUsers.find((user) => user.name === username);
-    const findUser = User.find((user) => user.name === username);
+    const findUser = mockUsers.find((user) => user.name === username);
     if (!findUser || (findUser.password != password))
         return res.status(401).send({ msg: "Bad Credentials" });
     //the cookie sent to the client side holds only the session id not the session value
@@ -96,6 +100,7 @@ app.get("/api/auth/status", (req, res) => {
         : res.status(401).send({ msg: "Not Authenticated" })
 });
 
+//##########################################
 //authentication using passport 
 //create an auth api endpoint and pass strategy for authentication 
 app.post("/api/authenticate", passport.authenticate('local'), (req, res) => {
@@ -103,10 +108,16 @@ app.post("/api/authenticate", passport.authenticate('local'), (req, res) => {
 });
 //passport auth status check 
 app.get("/api/authenticatestatus", (req, res) => {
-    console.log(`Inside passpor auth status`);
-    console.log(req.user);
-    console.log(req.session);
-    return (req.user) ? res.send(req.user) : res.sendStatus(401);
+    req.sessionStore.get(req.session.id, (err, sessionData) => {
+        if (err) {
+            throw err;
+        }
+    });
+    console.log(`Inside passport auth status`);
+    console.log(`user logged in: ${req.session}`);
+    //console.log(`session: ${req.session}`);
+    console.log(`session id: ${req.sessionID}`);
+    return (req.sessionID) ? res.send(true) : res.sendStatus(401);
 });
 
 app.post("/api/updateuser", (req, res) => {

@@ -33,34 +33,36 @@ router.get("/home", (req, res, next) => {
     res.status(200).send({ msg: 'hello' });
 });
 
-router.get("/api/users", query("filter").isString()
+router.get("/api/users", query("filter")
+    .isString()
     .notEmpty()
-    .isLength({ min: 3, max: 12 })
-    .withMessage("the filter must between 3-12 letters"),
+    .withMessage("Must not be empty")
+    .isLength({ min: 3, max: 10 })
+    .withMessage("Must be at least 3-10 characters"),
     (req, res) => {
-        console.log(req["express-validator#contexts"]);
-        console.log(req.sessionID);
-        req.sessionStore.get(req.session.id, (error, sessionData) => {
-            if (error) {
-                console.log(err);
-                throw error;
+        req.sessionStore.get(req.session.id, (err, sessionData) => {
+            if (err) {
+                throw err;
             }
-            console.log(sessionData);
-        }
-        );
+        });
+        console.log("Validating the request filters");
         const result = validationResult(req); //handle the validation result to do it for you
         //instead of doing manually
-        console.log(result);
+        console.log(`Result of validation ${result}`);
+        console.log(`is result empty:${result.isEmpty()}`)
         if (!result.isEmpty()) return res.send(result);
+        console.log("Validation to get all users passed");
+        //console.log(`value used is : ${query.params}`)
         const {
             query: { filter, value },
         } = req;
-
-        if (filter && value) {
-            mockUsers.find((user) => user[filter].includes(value))
-        }
-        return res.send(mockUsers)
-    });
+        if (filter && value)
+            return res.send(
+                mockUsers.filter((user) => user[filter].includes(value))
+            );
+        return res.send(mockUsers);
+    }
+);
 
 //define route parameters to make parameter based api calls on the same resource
 router.get("/api/users/:id", (req, res) => {
