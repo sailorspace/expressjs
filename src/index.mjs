@@ -9,6 +9,7 @@ import mongoose from "mongoose";
 import "./strategies/local-strategy.mjs";
 import { User } from './mongoose/schema/user.mjs';
 import MongoStore from 'connect-mongo';
+import cors from "cors";
 /* import userRouter from "../routes/user.mjs";
 import productsRouter from "../routes/products.mjs"; */
 
@@ -41,6 +42,7 @@ app.use(session({
 app.use(passport.initialize()); //enable passport 
 app.use(passport.session()); //this takes care of tracking a user to the session and 
 //figure and validate user 
+app.use(cors({credentials: true, origin: 'http://localhost:3000'}));
 
 //app.use(cookieParser("secret")); // in case we have a signed cookie 
 app.use(routes);
@@ -87,7 +89,7 @@ app.post("/api/auth", (req, res) => {
 });
 
 
-app.get("/api/auth/status", (req, res) => {
+/* app.get("/api/auth/status", (req, res) => {
     console.log(req.session.user);
     req.sessionStore.get(req.sessionID, (error, session) => {
         console.log(session);
@@ -98,7 +100,7 @@ app.get("/api/auth/status", (req, res) => {
     //two different sessions created
     return req.session.user ? res.status(200).send(req.session.user)
         : res.status(401).send({ msg: "Not Authenticated" })
-});
+}); */
 
 //##########################################
 //authentication using passport 
@@ -107,17 +109,9 @@ app.post("/api/authenticate", passport.authenticate('local'), (req, res) => {
     res.status(200).send(true);
 });
 //passport auth status check 
-app.get("/api/authenticatestatus", (req, res) => {
-    req.sessionStore.get(req.session.id, (err, sessionData) => {
-        if (err) {
-            throw err;
-        }
-    });
-    console.log(`Inside passport auth status`);
-    console.log(`user logged in: ${req.session}`);
-    //console.log(`session: ${req.session}`);
-    console.log(`session id: ${req.sessionID}`);
-    return (req.sessionID) ? res.send(true) : res.sendStatus(401);
+
+app.get("/api/auth/status", (request, response) => {
+	return request.user ? response.send(request.user) : response.sendStatus(401);
 });
 
 app.post("/api/updateuser", (req, res) => {
