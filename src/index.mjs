@@ -5,10 +5,16 @@ import cookieParser from 'cookie-parser';
 import session from 'express-session';
 import { mockUsers } from './utils/constants.mjs';
 import passport from "passport";
+import mongoose from "mongoose";
 import "./strategies/local-strategy.mjs";
-
+import { User } from './mongoose/schema/user.mjs';
 /* import userRouter from "../routes/user.mjs";
 import productsRouter from "../routes/products.mjs"; */
+
+//connect to mongo db mongodb://localhost:27017/
+mongoose.connect("mongodb://0.0.0.0:27017/orchesturf")
+    .then(() => console.log("connected to the db"))
+    .catch((error) => console.log(`Error ${error}`));
 
 //{ query } for validating the query parameters
 //here we can 
@@ -66,7 +72,8 @@ app.get("/", (req, res) => {
 
 app.post("/api/auth", (req, res) => {
     const { username, password } = req.body;
-    const findUser = mockUsers.find((user) => user.name === username);
+    //const findUser = mockUsers.find((user) => user.name === username);
+    const findUser = User.find((user) => user.name === username);
     if (!findUser || (findUser.password != password))
         return res.status(401).send({ msg: "Bad Credentials" });
     //the cookie sent to the client side holds only the session id not the session value

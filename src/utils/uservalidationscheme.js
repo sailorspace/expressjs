@@ -19,5 +19,8 @@ export const uservalidationscheme = {
 
     city: {
         notEmpty: true,
+    },
+    password: {
+        notEmpty: true,
     }
 };

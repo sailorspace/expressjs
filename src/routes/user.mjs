@@ -5,6 +5,7 @@ import { uservalidationscheme } from '../utils/uservalidationscheme.js';
 import { mockUsers } from '../utils/constants.mjs';
 import { resolveIndexById } from '../utils/middleware.js';
 import crypto from "crypto";
+import { User } from "../mongoose/schema/user.mjs";
 //like a mini application that can group together all the request
 //and then register the router to express
 const router = Router();
@@ -79,12 +80,38 @@ router.get("/api/users/:id", (req, res) => {
 
 //update whole set of records single/many 
 //mostly use to add a entirely new record
-router.post("/api/users", /* body("name")
-    .notEmpty()
-    .isString()
-    .isLength({ min: 3, max: 12 })
-    .withMessage("provide name between 3 to 12 characters only") */
-    checkSchema(uservalidationscheme), (request, res) => {
+router.post("/api/users",
+    checkSchema(uservalidationscheme),
+    async (req, res) => {
+        const result = validationResult(req);
+        if (!result.isEmpty()) return res.status(400).send({ errors: result.array() });
+        const data = matchedData(req);
+        console.log(`new user to be added`);
+        console.log(data);
+        //const { body } = req;
+        //const newUser = new User(body); //better get the data from the marchedData funtion
+        //using the request data directly could be an hazard and dangerous 
+        //better to validate the data first from middleware ..validationResult
+        //and then fetch this data from the matched data to work on 
+        const newUser = new User(data);
+        //save the user to the database 
+        try {
+            const savedUser = await newUser.save();
+            return res.status(201).send(savedUser);
+        }
+        catch (error) {
+            console.log(error);
+            return res.sendStatus(400);
+        }
+    });
+/* router.post("/api/users", 
+    // body("name")
+    //.notEmpty()
+    //.isString()
+    //.isLength({ min: 3, max: 12 })
+    //.withMessage("provide name between 3 to 12 characters only") 
+    //checkSchema(uservalidationscheme), 
+    (request, res) => {
         console.log("POST Called");
         const result = validationResult(request);
         console.log(result.isEmpty());
@@ -96,7 +123,7 @@ router.post("/api/users", /* body("name")
         mockUsers.push(newuser);
         res.status(200).send(newuser);
 
-    });
+    }); */
 
 //update a row and all the columns i.e entire record
 //even if we do not provide a property still the update will include modifying it by its default value

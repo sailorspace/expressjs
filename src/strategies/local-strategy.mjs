@@ -1,13 +1,14 @@
 import passport from "passport";
 import { Strategy } from "passport-local";
 import { mockUsers } from "../utils/constants.mjs";
-
+import { User } from   "../mongoose/schema/user.mjs";
 //taking the user object validated and storing that in the session 
 //does well with expressjs
 //serialize the data into the session 
 passport.serializeUser((user, done) => {
     console.log(`inside the serialize User`);
     console.log(user);
+    console.log(user.name);
     done(null, user.id); //pass in something that is unique to look for in the array or db
     //done(null, user.name); //we can use the username as well to validate the user in db
 });
@@ -16,18 +17,21 @@ passport.serializeUser((user, done) => {
 //take the id from the session and unpack/retrieve and storing it into the request itself
 //we can take either id or username based on the serializer above which is id in this case
 //for the passport object mapping to the identity , id here
-passport.deserializeUser((id, done) => {
+passport.deserializeUser(async(id, done) => {
     console.log(`inside the deserialize User`);
     console.log(id);
     //search for the user in the array or database
     try {
-        const findUser = mockUsers.find((user) => user.id === id);
+        //const findUser = mockUsers.find((user) => user.id === id);
+        const findUser = await User.findById(id); //just passing id value without filter as above
+        console.log(findUser);
+        //in mogo db unique id is an objectid type , so we use  username
         if (!findUser) throw new Error("User not found");
         done(null, findUser);
     }
     catch (error) {
         done(error, null);
-    }
+    } 
 });
 
 //all the passport modules have a strategy class 
@@ -42,14 +46,15 @@ export default passport.use(
     //in out case here the username/password matches with what we actually use
     // 
     new Strategy({ usernameField: "username", passwordField: "password" },
-        (username, password, done) => {
+        async (username, password, done) => {
             console.log(`username: ${username}`);
             console.log(`password: ${password}`);
             //validate the user and check if the passwords are thesame db vs req
             //1.get the username from boy and search for it in the database
             //2.when username found in db then match the password of body with the password of db
             try {
-                const findUser = mockUsers.find((user) => user.name === username);
+                //const findUser = mockUsers.find((user) => user.name === username);
+                const findUser = await User.findOne({name:username});
                 if (!findUser) throw new Error('User not found');
                 if (findUser.password !== password) throw Error("Invalid Credentials");
                 done(null, findUser);
